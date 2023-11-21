@@ -78,6 +78,39 @@ def fast_fourier_transform(arrNums):
 
     return fft_result
 
+def fast_fourier_transform_inverse(arrNums):
+    
+    N = len(arrNums)
+    arr = np.array(arrNums)
+
+    even_indices = []
+    odd_indices = []
+
+    if N <= 16:
+        return dft_naive_oneD_inverse(arr)
+    
+    for i in range(N):
+        if i % 2 == 0:
+            even_indices.append(arr[i])
+        else:
+            odd_indices.append(arr[i])
+
+    #recursive calls
+    fft_even = fast_fourier_transform(even_indices)
+    fft_odd = fast_fourier_transform(odd_indices)
+
+    fft_result = [0 for index in range(N)]
+
+    for k in range(N//2):
+        fft_even_result = fft_even[k]
+        exponent_expression = cmath.exp((-1j*2*np.pi*k)/N)
+        fft_odd_result = exponent_expression*fft_odd[k]
+
+        fft_result[k] = fft_even_result + fft_odd_result
+        fft_result[k + N//2] = fft_even_result - fft_odd_result
+
+    return fft_result
+
 if __name__ == "__main__":
 
     arrTest = [0 for i in range(64)]
@@ -86,9 +119,14 @@ if __name__ == "__main__":
 
     ft_naive = dft_naive_oneD(arrTest)
     ft_fast = fast_fourier_transform(arrTest)
+    ft_og = fast_fourier_transform_inverse(ft_fast)
     
     print(ft_naive)
 
     print("\n\n\nNaive\n")
 
     print(ft_fast)
+
+    print("\n\n\nOG\n")
+
+    print(ft_og)
