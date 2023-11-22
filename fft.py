@@ -78,65 +78,78 @@ def fast_fourier_transform(arrNums, isInverse):
 def fft_inverse(arrNums):
     return fast_fourier_transform(arrNums, True)
 
-def fft_twoD(twoDArr, isInverse):
+def fft_twoD(twoDArr):
     fft_twoD_rows = []
     fft_twoD_columns = []
 
     twoDArr_vTwo = np.array(twoDArr)
 
-    for i in range(len(twoDArr_vTwo)):
-        rowArr = twoDArr[i]
-        if isInverse == True:
-            resultRow = fast_fourier_transform(rowArr, True)
-            fft_twoD_rows.append(resultRow)
-        else:
-            resultRow = fft_inverse(rowArr)
-            fft_twoD_rows.append(resultRow)
+    for row in twoDArr_vTwo:
+        rowArr = fast_fourier_transform(row, False)
+        fft_twoD_rows.append(rowArr)
 
-    twoDArr_vTwo_transpose = np.transpose(fft_twoD_rows)
+    outer_sum = np.transpose(fft_twoD_rows)
 
-    for i in range(len(twoDArr_vTwo_transpose)):
-        colArr = twoDArr_vTwo_transpose[i]
-        if isInverse == True:
-            colRow = fast_fourier_transform(colArr, True)
-            fft_twoD_columns.append(colRow)
-        else:
-            colRow = fft_inverse(colArr)
-            fft_twoD_columns.append(colRow)
+    for col in outer_sum:
+        colArr = fast_fourier_transform(col, False)
+        fft_twoD_columns.append(colArr)
 
-    fft_twoD_result = np.transpose(fft_twoD_columns)
+    fft_final = np.transpose(fft_twoD_columns).tolist()
 
-    return fft_twoD_result
+    return fft_final
+
 
 def fft_twoD_inverse(twoDArr):
-    return fft_twoD(twoDArr, True)
+    
+    original_rows = []
+    original_cols = []
+
+    inner_arr = np.array(twoDArr)
+
+    for row in inner_arr:
+        rowArr = fft_inverse(row)
+        original_rows.append(rowArr)
+
+    outer_arr = np.transpose(original_rows)
+
+    for col in outer_arr:
+        colArr = fft_inverse(col)
+        original_cols.append(colArr)
+
+    original_arr = np.transpose(original_cols).tolist()
+
+    return original_arr
 
 if __name__ == "__main__":
 
-    arrTest = [0 for i in range(32)]
-    for i in range(32):
+    arrTest = [0 for i in range(16)]
+    for i in range(16):
         arrTest[i] = i
 
-    # arrTwoD = []
-    # for i in range(32):
-    #     arrTwoD.append(arrTest)
+    arrTwoD = []
+    for i in range(2):
+        arrTwoD.append(arrTest)
 
-    # testfft_twoD = fft_twoD(arrTwoD, False)
-    # testfft_twoD_inverse = fft_twoD_inverse(testfft_twoD)
-    # print(testfft_twoD_inverse)
+    print(arrTwoD)
+    print("\n\n")
+    testfft_twoD = fft_twoD(arrTwoD)
+    print(testfft_twoD)
+    print("\n\n")
+    testfft_twoD_inverse = fft_twoD_inverse(testfft_twoD)
+    print(testfft_twoD_inverse)
 
-    ft_naive = dft_naive_oneD(arrTest, False)
-    ft_fast = fast_fourier_transform(arrTest, False)
-    inverse_fft = fft_inverse(ft_fast)
+    # ft_naive = dft_naive_oneD(arrTest, False)
+    # ft_fast = fast_fourier_transform(arrTest, False)
+    # inverse_fft = fft_inverse(ft_fast)
     
-    print("Naive \n")
+    # print("Naive \n")
 
-    print(ft_naive)
+    # print(ft_naive)
 
-    print("\n\n\nFFT\n")
+    # print("\n\n\nFFT\n")
 
-    print(ft_fast)
+    # print(ft_fast)
 
-    print("\n\n\nInverse FFT\n")
+    # print("\n\n\nInverse FFT\n")
 
-    print(inverse_fft)
+    # print(inverse_fft)
