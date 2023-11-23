@@ -34,7 +34,7 @@ def padImage(imageStr):
         built_in_fft_row = np.fft.fft2(row)
         builtInFft.append(built_in_fft_row.tolist())
 
-    return modFftImage, builtInFft, img
+    return modFftImage, builtInFft, img, paddingPixels
 
 if __name__ == "__main__":
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     if args.mode == 1:
         
-        ftImage, builtInFtImage, imgDisplay = padImage(args.image)
+        ftImage, builtInFtImage, imgDisplay, padPixels = padImage(args.image)
 
         fftImage = np.array(ftImage)
         fftImageBuiltIn = np.array(builtInFtImage)
@@ -79,7 +79,52 @@ if __name__ == "__main__":
     
     elif args.mode == 2:
 
-        ftImage, builtInFtImage, imgDisplay = padImage(args.image)
+        ftImage, builtInFtImage, imgDisplay, padPixels = padImage(args.image)
+
+        numZeroes = 0
+        ft_denoised = []
+
+        for twoDRow in ftImage:
+            for row in twoDRow:
+                for val in row:
+                    if abs(abs(val) - (2*np.pi)) <= 0.2:
+                        val = 0
+                        numZeroes = numZeroes + 1
+            
+            inverse_row = fft_twoD_inverse(twoDRow)
+            
+            for i in range(padPixels):
+                inverse_row.pop()
+            
+            ft_denoised.append(inverse_row)
+        
+        print(numZeroes)
+
+        fftDenoised = np.array(ft_denoised)
+        fftAbsDenoised = np.abs(fftDenoised)
+
+        # Create a 1x2 subplot
+        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+
+        # Plot the first image without LogNorm
+        im1 = axes[0].imshow(imgDisplay, cmap='viridis')
+        axes[0].set_title('Original Image')
+
+        im2 = axes[1].imshow(fftAbsDenoised, cmap='viridis')
+        axes[1].set_title('Denoised Image')
+
+        # Add colorbars
+        cb1 = plt.colorbar(im1, ax=axes[0], orientation='vertical', fraction=0.046, pad=0.04)
+        cb2 = plt.colorbar(im2, ax=axes[1], orientation='vertical', fraction=0.046, pad=0.04)
+
+        # Adjust layout to prevent clipping of colorbars
+        plt.tight_layout()
+
+        # Show the plot
+        plt.show()
+
+        
+
 
         
 
