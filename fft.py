@@ -80,29 +80,57 @@ if __name__ == "__main__":
     elif args.mode == 2:
 
         ftImage, builtInFtImage, imgDisplay, padPixels = padImage(args.image)
+        
+        ftTemp = np.array(ftImage)
+        ftAbs = np.abs(ftImage).tolist()
+        ftScaled = []
 
+        for twoDArr in ftAbs:
+            modTwoDArr = []
+            for row in twoDArr:
+                modRow = []
+                sumRow = sum(row)
+                for val in row:
+                    val = val/sumRow
+                    val = val * 2 * np.pi
+                    modRow.append(val)
+                modTwoDArr.append(modRow)
+            ftScaled.append(modTwoDArr)
+
+        print(np.max(np.array(ftScaled)))
+        print(np.min(np.array(ftScaled)))
         numZeroes = 0
         ft_denoised = []
 
-        for twoDRow in ftImage:
-            for row in twoDRow:
-                for val in row:
-                    if abs(abs(val) - (2*np.pi)) <= 0.2:
-                        val = 0
+        for i in range(len(ftScaled)):
+            twoDDenoised = []
+            for j in range(len(ftScaled[i])):
+                rowDenoised = []
+                for k in range(len(ftScaled[i][j])):
+                    if abs(ftScaled[i][j][k] - np.pi) <= 0.2:
+                        rowDenoised.append(0)
                         numZeroes = numZeroes + 1
-            
+                    else:
+                        rowDenoised.append(ftImage[i][j][k])
+                twoDDenoised.append(rowDenoised)
+            ft_denoised.append(twoDDenoised)
+        
+        ftFinal = []
+
+        for twoDRow in ft_denoised:
             inverse_row = fft_twoD_inverse(twoDRow)
             
             for i in range(padPixels):
                 inverse_row.pop()
             
-            ft_denoised.append(inverse_row)
+            ftFinal.append(inverse_row)
         
         print(numZeroes)
 
-        fftDenoised = np.array(ft_denoised)
-        fftAbsDenoised = np.abs(fftDenoised)
+        fftDenoised = np.array(ftFinal)
+        fftAbsDenoised = np.real(fftDenoised)
 
+        print(np.allclose(fftAbsDenoised, imgDisplay, rtol=1e-5, atol=1e-8))
         # Create a 1x2 subplot
         fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 
