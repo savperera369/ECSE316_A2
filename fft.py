@@ -25,7 +25,16 @@ def padImage(imageStr):
         
         modImage.append(rowTwoD)
 
-    return modImage, img
+    modFftImage = []
+    builtInFft = []
+
+    for row in modImage:
+        ft_row = fft_twoD(row)
+        modFftImage.append(ft_row)
+        built_in_fft_row = np.fft.fft2(row)
+        builtInFft.append(built_in_fft_row.tolist())
+
+    return modFftImage, builtInFft, img
 
 if __name__ == "__main__":
 
@@ -37,25 +46,15 @@ if __name__ == "__main__":
 
     if args.mode == 1:
         
-        modifiedImage, imgDisplay = padImage(args.image)
-        
-        modFftImage = []
-        modBuiltInDft = []
+        ftImage, builtInFtImage, imgDisplay = padImage(args.image)
 
-        for row in modifiedImage:
-            ft_row = fft_twoD(row)
-            modFftImage.append(ft_row)
-            dft_result = np.fft.fft2(row)
-            modBuiltInDft.append(dft_result.tolist())
+        fftImage = np.array(ftImage)
+        fftImageBuiltIn = np.array(builtInFtImage)
 
-        fftImage = np.array(modFftImage)
-        fftBuiltInImage = np.array(modBuiltInDft)
+        absFftImage = np.abs(fftImage)
+        absBuiltInFft = np.abs(fftImageBuiltIn)
 
-        absFFtImage = np.abs(fftImage)
-        absBuiltInDft = np.abs(fftBuiltInImage)
-
-        print(np.allclose(absFFtImage, absBuiltInDft, rtol=1e-5, atol=1e-8))
-
+        print(np.allclose(absFftImage, absBuiltInFft, rtol=1e-5, atol=1e-8))
         # Create a 1x2 subplot
         fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 
@@ -65,7 +64,7 @@ if __name__ == "__main__":
 
         # Plot the second image with LogNorm for each RGB channel
         for i in range(3):  # Loop over RGB channels
-            im2 = axes[1].imshow(absFFtImage[:,:,i], cmap='viridis', norm=LogNorm(), alpha=0.3)  # Use alpha for overlapping channels
+            im2 = axes[1].imshow(absFftImage[:,:,i], cmap='viridis', norm=LogNorm(), alpha=0.3)  # Use alpha for overlapping channels
         axes[1].set_title('Fourier Transform')
 
         # Add colorbars
@@ -77,5 +76,12 @@ if __name__ == "__main__":
 
         # Show the plot
         plt.show()
+    
+    elif args.mode == 2:
+
+        ftImage, builtInFtImage, imgDisplay = padImage(args.image)
+
+        
+
 
 
