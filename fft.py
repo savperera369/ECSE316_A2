@@ -5,15 +5,8 @@ from fourier_transform import *
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-# parser = argparse.ArgumentParser()
-# parser.add_argument('-m', '--mode', type=int, default=1)
-# parser.add_argument('-i', '--image', type=str, default="moonlanding.png")
-
-# args = parser.parse_args()
-
-if __name__ == "__main__":
-
-    image = cv2.imread("moonlanding.png")
+def padImage(imageStr):
+    image = cv2.imread(imageStr)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     imgList = img.tolist()
     numRows = len(imgList[0])
@@ -31,42 +24,58 @@ if __name__ == "__main__":
             rowTwoD.append([0,0,0])
         
         modImage.append(rowTwoD)
-    
-    modFftImage = []
-    modBuiltInDft = []
 
-    for row in modImage:
-        ft_row = fft_twoD(row)
-        modFftImage.append(ft_row)
-        dft_result = np.fft.fft2(row)
-        modBuiltInDft.append(dft_result.tolist())
+    return modImage, img
 
-    fftImage = np.array(modFftImage)
-    fftBuiltInImage = np.array(modBuiltInDft)
+if __name__ == "__main__":
 
-    absFFtImage = np.abs(fftImage)
-    absBuiltInDft = np.abs(fftBuiltInImage)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--mode', type=int, default=1)
+    parser.add_argument('-i', '--image', type=str, default="moonlanding.png")
 
-    print(np.allclose(absFFtImage, absBuiltInDft, rtol=1e-5, atol=1e-8))
+    args = parser.parse_args()
 
-    # Create a 1x2 subplot
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    if args.mode == 1:
+        
+        modifiedImage, imgDisplay = padImage(args.image)
+        
+        modFftImage = []
+        modBuiltInDft = []
 
-    # Plot the first image without LogNorm
-    im1 = axes[0].imshow(img, cmap='viridis')
-    axes[0].set_title('Original Image')
+        for row in modifiedImage:
+            ft_row = fft_twoD(row)
+            modFftImage.append(ft_row)
+            dft_result = np.fft.fft2(row)
+            modBuiltInDft.append(dft_result.tolist())
 
-    # Plot the second image with LogNorm for each RGB channel
-    for i in range(3):  # Loop over RGB channels
-        im2 = axes[1].imshow(absFFtImage[:,:,i], cmap='viridis', alpha=0.3)  # Use alpha for overlapping channels
-    axes[1].set_title('Fourier Transform')
+        fftImage = np.array(modFftImage)
+        fftBuiltInImage = np.array(modBuiltInDft)
 
-    # Add colorbars
-    cb1 = plt.colorbar(im1, ax=axes[0], orientation='vertical', fraction=0.046, pad=0.04)
-    cb2 = plt.colorbar(im2, ax=axes[1], orientation='vertical', fraction=0.046, pad=0.04)
+        absFFtImage = np.abs(fftImage)
+        absBuiltInDft = np.abs(fftBuiltInImage)
 
-    # Adjust layout to prevent clipping of colorbars
-    plt.tight_layout()
+        print(np.allclose(absFFtImage, absBuiltInDft, rtol=1e-5, atol=1e-8))
 
-    # Show the plot
-    plt.show()
+        # Create a 1x2 subplot
+        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+
+        # Plot the first image without LogNorm
+        im1 = axes[0].imshow(imgDisplay, cmap='viridis')
+        axes[0].set_title('Original Image')
+
+        # Plot the second image with LogNorm for each RGB channel
+        for i in range(3):  # Loop over RGB channels
+            im2 = axes[1].imshow(absFFtImage[:,:,i], cmap='viridis', norm=LogNorm(), alpha=0.3)  # Use alpha for overlapping channels
+        axes[1].set_title('Fourier Transform')
+
+        # Add colorbars
+        cb1 = plt.colorbar(im1, ax=axes[0], orientation='vertical', fraction=0.046, pad=0.04)
+        cb2 = plt.colorbar(im2, ax=axes[1], orientation='vertical', fraction=0.046, pad=0.04)
+
+        # Adjust layout to prevent clipping of colorbars
+        plt.tight_layout()
+
+        # Show the plot
+        plt.show()
+
+
