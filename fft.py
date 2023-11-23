@@ -54,12 +54,12 @@ if __name__ == "__main__":
 
     # Plot the first image without LogNorm
     im1 = axes[0].imshow(img, cmap='viridis')
-    axes[0].set_title('Image 1')
+    axes[0].set_title('Original Image')
 
     # Plot the second image with LogNorm for each RGB channel
     for i in range(3):  # Loop over RGB channels
         im2 = axes[1].imshow(absFFtImage[:,:,i], cmap='viridis', alpha=0.3)  # Use alpha for overlapping channels
-    axes[1].set_title('Image 2')
+    axes[1].set_title('Fourier Transform')
 
     # Add colorbars
     cb1 = plt.colorbar(im1, ax=axes[0], orientation='vertical', fraction=0.046, pad=0.04)
