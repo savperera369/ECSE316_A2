@@ -1,43 +1,72 @@
 import argparse
-import matplotlib
+import cv2
+import numpy as np
 from fourier_transform import *
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-m', '--mode', type=int, default=1)
-parser.add_argument('-i', '--image', type=str, default="./moonlanding.png")
+# parser = argparse.ArgumentParser()
+# parser.add_argument('-m', '--mode', type=int, default=1)
+# parser.add_argument('-i', '--image', type=str, default="moonlanding.png")
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
 if __name__ == "__main__":
 
-    arrTest = [0 for i in range(16)]
-    for i in range(16):
-        arrTest[i] = i
+    image = cv2.imread("moonlanding.png")
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    imgList = img.tolist()
+    numRows = len(imgList[0])
 
-    arrTwoD = []
-    for i in range(2):
-        arrTwoD.append(arrTest)
+    n=0
+    while 2**n <= numRows:
+        n = n + 1
 
-    print(arrTwoD)
-    print("\n\n")
-    testfft_twoD = fft_twoD(arrTwoD)
-    print(testfft_twoD)
-    print("\n\n")
-    testfft_twoD_inverse = fft_twoD_inverse(testfft_twoD)
-    print(testfft_twoD_inverse)
-
-    # ft_naive = dft_naive_oneD(arrTest, False)
-    # ft_fast = fast_fourier_transform(arrTest, False)
-    # inverse_fft = fft_inverse(ft_fast)
+    paddingPixels = (2**n) - numRows
     
-    # print("Naive \n")
+    modImage = []
 
-    # print(ft_naive)
+    for rowTwoD in imgList:
+        for i in range(paddingPixels):
+            rowTwoD.append([0,0,0])
+        
+        modImage.append(rowTwoD)
+    
+    modFftImage = []
+    modBuiltInDft = []
 
-    # print("\n\n\nFFT\n")
+    for row in modImage:
+        ft_row = fft_twoD(row)
+        modFftImage.append(ft_row)
+        dft_result = np.fft.fft2(row)
+        modBuiltInDft.append(dft_result.tolist())
 
-    # print(ft_fast)
+    fftImage = np.array(modFftImage)
+    fftBuiltInImage = np.array(modBuiltInDft)
 
-    # print("\n\n\nInverse FFT\n")
+    absFFtImage = np.abs(fftImage)
+    absBuiltInDft = np.abs(fftBuiltInImage)
 
-    # print(inverse_fft)
+    print(np.allclose(absFFtImage, absBuiltInDft, rtol=1e-5, atol=1e-8))
+
+    # Create a 1x2 subplot
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+
+    # Plot the first image without LogNorm
+    im1 = axes[0].imshow(img, cmap='viridis')
+    axes[0].set_title('Image 1')
+
+    # Plot the second image with LogNorm for each RGB channel
+    for i in range(3):  # Loop over RGB channels
+        im2 = axes[1].imshow(absFFtImage[:,:,i], cmap='viridis', alpha=0.3)  # Use alpha for overlapping channels
+    axes[1].set_title('Image 2')
+
+    # Add colorbars
+    cb1 = plt.colorbar(im1, ax=axes[0], orientation='vertical', fraction=0.046, pad=0.04)
+    cb2 = plt.colorbar(im2, ax=axes[1], orientation='vertical', fraction=0.046, pad=0.04)
+
+    # Adjust layout to prevent clipping of colorbars
+    plt.tight_layout()
+
+    # Show the plot
+    plt.show()
