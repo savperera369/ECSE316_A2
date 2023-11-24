@@ -21,6 +21,26 @@ def dft_naive_oneD(arrNums, isInverse):
     
     return dft_coefficients
 
+def dft_naive_twoD(twoDArr):
+    dft_twoD_rows = []
+    dft_twoD_columns = []
+
+    twoDArr_vTwo = np.array(twoDArr)
+
+    for row in twoDArr_vTwo:
+        rowArr = dft_naive_oneD(row.tolist(), False)
+        dft_twoD_rows.append(rowArr)
+
+    outer_sum = np.transpose(np.array(dft_twoD_rows))
+
+    for col in outer_sum:
+        colArr = dft_naive_oneD(col.tolist(), False)
+        dft_twoD_columns.append(colArr)
+
+    dft_final = (np.transpose(np.array(dft_twoD_columns))).tolist()
+
+    return dft_final
+
 #compute X_subk
 def fast_fourier_transform(arrNums, isInverse):
     exponent_expression = 0
@@ -29,7 +49,7 @@ def fast_fourier_transform(arrNums, isInverse):
     even_indices = []
     odd_indices = []
 
-    if N <= 16:
+    if N <= 8:
         returnedData = []
         if isInverse == True:
             returnedData = dft_naive_oneD(arrNums, True)
@@ -76,16 +96,16 @@ def fft_twoD(twoDArr):
     twoDArr_vTwo = np.array(twoDArr)
 
     for row in twoDArr_vTwo:
-        rowArr = fast_fourier_transform(row, False)
+        rowArr = fast_fourier_transform(row.tolist(), False)
         fft_twoD_rows.append(rowArr)
 
-    outer_sum = np.transpose(fft_twoD_rows)
+    outer_sum = np.transpose(np.array(fft_twoD_rows))
 
     for col in outer_sum:
-        colArr = fast_fourier_transform(col, False)
+        colArr = fast_fourier_transform(col.tolist(), False)
         fft_twoD_columns.append(colArr)
 
-    fft_final = np.transpose(fft_twoD_columns).tolist()
+    fft_final = (np.transpose(np.array(fft_twoD_columns))).tolist()
 
     return fft_final
 
@@ -97,15 +117,15 @@ def fft_twoD_inverse(twoDArr):
     inner_arr = np.array(twoDArr)
 
     for row in inner_arr:
-        rowArr = fft_inverse(row)
+        rowArr = fft_inverse(row.tolist())
         original_rows.append(rowArr)
 
-    outer_arr = np.transpose(original_rows)
+    outer_arr = np.transpose(np.array(original_rows))
 
     for col in outer_arr:
-        colArr = fft_inverse(col)
+        colArr = fft_inverse(col.tolist())
         original_cols.append(colArr)
 
-    original_arr = np.transpose(original_cols).tolist()
+    original_arr = (np.transpose(np.array(original_cols))).tolist()
 
     return original_arr
