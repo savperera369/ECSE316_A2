@@ -139,57 +139,64 @@ if __name__ == "__main__":
 
         ftImage, builtInFtImage, imgDisplay, padPixelsRow, padPixelsCol = padImage(args.image)
 
-        keep_fraction = 0.1
-        mod_fft_One = np.array(ftImage).copy()
-        threshold = keep_fraction * np.max(np.abs(mod_fft_One))
-        # Set coefficients below the threshold to zero
-        mod_fft_One[np.abs(mod_fft_One) < threshold] = 0
-        numNonZeroes = np.count_nonzero(mod_fft_One)
-        ft_modifiedOne = mod_fft_One.tolist()
-
-        print(numNonZeroes/mod_fft_One.size)
+        compressedImages = []
         
-        ft_denoisedOne = fft_twoD_inverse(ft_modifiedOne)
-        fft_denoised_finalOne = unpadImage(ft_denoisedOne, padPixelsRow, padPixelsCol)
-        fftRealDenoisedOne = np.real(fft_denoised_finalOne)
+        compression_percentage = 20
+        for i in range(5):
+            mod_fft = np.array(ftImage).copy()
+            threshold = np.percentile(np.abs(mod_fft), compression_percentage)
+            # Set coefficients below the threshold to zero
+            mod_fft[np.abs(mod_fft) < threshold] = 0
+            numNonZeroes = np.count_nonzero(mod_fft)
+            ft_modified = mod_fft.tolist()
 
-        # Create a 1x2 subplot
-        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+            print(f"Number of Non Zeroes for Compression Percentage of {compression_percentage}: {numNonZeroes}")
+            
+            ft_denoised = fft_twoD_inverse(ft_modified)
+            fft_denoised_final = unpadImage(ft_denoised, padPixelsRow, padPixelsCol)
+            fftRealDenoised= np.real(fft_denoised_final)
+            compressedImages.append(fftRealDenoised)
 
-        # Plot the first image without LogNorm
-        im1 = axes[0].imshow(imgDisplay, cmap='gray')
-        axes[0].set_title('Original Image')
+            if i==3:
+                compression_percentage += 19.9
+            else:
+                compression_percentage += 20
+        
+        # Create a 2x3 subplot
+        fig, axes = plt.subplots(2, 3, figsize=(10, 5))
 
-        im2 = axes[1].imshow(fftRealDenoisedOne, cmap = 'gray')  
-        axes[1].set_title('Denoised Image')
+        # Plot images in each subplot
+        axes[0, 0].imshow(imgDisplay, cmap='gray')
+        axes[0, 0].set_title('Original Image')
 
-        # Add colorbars
-        cb1 = plt.colorbar(im1, ax=axes[0], orientation='vertical', fraction=0.046, pad=0.04)
-        cb2 = plt.colorbar(im2, ax=axes[1], orientation='vertical', fraction=0.046, pad=0.04)
+        axes[0, 1].imshow(compressedImages[0], cmap='gray')
+        axes[0, 1].set_title('20% Compression')
 
-        # Adjust layout to prevent clipping of colorbars
+        axes[0, 2].imshow(compressedImages[1], cmap='gray')
+        axes[0, 2].set_title('40% Compression')
+
+        axes[1, 0].imshow(compressedImages[2], cmap='gray')
+        axes[1, 0].set_title('60% Compression')
+
+        axes[1, 1].imshow(compressedImages[3], cmap='gray')
+        axes[1, 1].set_title('80% Compression')
+
+        axes[1, 2].imshow(compressedImages[4], cmap='gray')
+        axes[1, 2].set_title('99.9% Compression')
+
+        # Adjust layout to prevent clipping of titles
         plt.tight_layout()
 
         # Show the plot
         plt.show()
     
     elif args.mode == 4:
-        # n=5
-        # random_array = np.random.rand(2**n, 2**n)
-        # listForm = random_array.tolist()
-        # dftResult = dft_naive_twoD(listForm)
-        #dftNumpy = np.abs(np.array(dftResult))
-        # fftResult = fft_twoD(listForm)
-        #fftNumpy = np.abs(np.array(fftResult))
-        # builtInFft = np.fft.fft2(np.array(listForm))
-        # builtNumpy = np.abs(builtInFft)
-        # print(np.allclose(dftNumpy, fftNumpy, rtol=1e-5, atol=1e-8))
-        # print(np.allclose(dftNumpy, builtNumpy, rtol=1e-5, atol=1e-8))
-        # print(np.allclose(fftNumpy, builtNumpy, rtol=1e-5, atol=1e-8))
+
         runtimesDft = [[],[],[],[],[],[]]
         runtimesFft = [[],[],[],[],[],[]]
         sizes = [32*32, 64*64, 128*128, 256*256, 512*512, 1024*1024]
         n=5
+
         for i in range(3):
             for j in range(6):
                 random_array = np.random.rand(2**n, 2**n)
@@ -254,11 +261,6 @@ if __name__ == "__main__":
         # Display the plot
         plt.show()
 
-        # builtInFft = np.fft.fft2(np.array(listForm))
-        # builtNumpy = np.abs(builtInFft)
-        # print(np.allclose(dftNumpy, fftNumpy, rtol=1e-5, atol=1e-8))
-        # print(np.allclose(dftNumpy, builtNumpy, rtol=1e-5, atol=1e-8))
-        # print(np.allclose(fftNumpy, builtNumpy, rtol=1e-5, atol=1e-8))
         
     
 
