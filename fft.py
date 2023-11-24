@@ -28,13 +28,17 @@ def padImage(imageStr):
     modFftImage = []
     builtInFft = []
 
-    for row in modImage:
-        ft_row = fft_twoD(row)
+    for twoDRow in modImage:
+        ft_row = fft_twoD(twoDRow)
         modFftImage.append(ft_row)
-        built_in_fft_row = np.fft.fft2(row)
+        built_in_fft_row = np.fft.fft2(np.array(twoDRow))
         builtInFft.append(built_in_fft_row.tolist())
 
     return modFftImage, builtInFft, img, paddingPixels
+
+def unpadImage(paddedImage, paddingPixels):
+    # Use array slicing to remove the padded region
+    return np.array(paddedImage)[:, :-paddingPixels, :]
 
 if __name__ == "__main__":
 
@@ -81,64 +85,34 @@ if __name__ == "__main__":
 
         ftImage, builtInFtImage, imgDisplay, padPixels = padImage(args.image)
         
-        ftTemp = np.array(ftImage)
-        ftAbs = np.abs(ftImage).tolist()
-        ftScaled = []
+        ft_modified = []
+        keep_fraction = 0.1
 
-        for twoDArr in ftAbs:
-            modTwoDArr = []
-            for row in twoDArr:
-                modRow = []
-                sumRow = sum(row)
-                for val in row:
-                    val = val/sumRow
-                    val = val * 2 * np.pi
-                    modRow.append(val)
-                modTwoDArr.append(modRow)
-            ftScaled.append(modTwoDArr)
-
-        print(np.max(np.array(ftScaled)))
-        print(np.min(np.array(ftScaled)))
-        numZeroes = 0
+        for twoDArr in ftImage:
+            im_fft2 = np.array(twoDArr).copy()
+            r,c = im_fft2.shape
+            im_fft2[int(r*keep_fraction):int(r*(1-keep_fraction))] = 0
+            im_fft2[:, int(c*keep_fraction):int(c*(1-keep_fraction))] = 0
+            ft_modified.append(im_fft2.tolist())
+        
         ft_denoised = []
 
-        for i in range(len(ftScaled)):
-            twoDDenoised = []
-            for j in range(len(ftScaled[i])):
-                rowDenoised = []
-                for k in range(len(ftScaled[i][j])):
-                    if abs(ftScaled[i][j][k] - np.pi) <= 0.2:
-                        rowDenoised.append(0)
-                        numZeroes = numZeroes + 1
-                    else:
-                        rowDenoised.append(ftImage[i][j][k])
-                twoDDenoised.append(rowDenoised)
-            ft_denoised.append(twoDDenoised)
-        
-        ftFinal = []
+        for twoDArr in ft_modified:
+            inverse_row = fft_twoD_inverse(twoDArr)
+            ft_denoised.append(inverse_row)
 
-        for twoDRow in ft_denoised:
-            inverse_row = fft_twoD_inverse(twoDRow)
-            
-            for i in range(padPixels):
-                inverse_row.pop()
-            
-            ftFinal.append(inverse_row)
-        
-        print(numZeroes)
+        fft_denoised_final = unpadImage(ft_denoised, padPixels)
+        fftRealDenoised = np.real(fft_denoised_final)
 
-        fftDenoised = np.array(ftFinal)
-        fftAbsDenoised = np.real(fftDenoised)
-
-        print(np.allclose(fftAbsDenoised, imgDisplay, rtol=1e-5, atol=1e-8))
         # Create a 1x2 subplot
         fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 
         # Plot the first image without LogNorm
-        im1 = axes[0].imshow(imgDisplay, cmap='viridis')
+        im1 = axes[0].imshow(imgDisplay, cmap='gray')
         axes[0].set_title('Original Image')
 
-        im2 = axes[1].imshow(fftAbsDenoised, cmap='viridis')
+        for i in range(3):  # Loop over RGB channels
+            im2 = axes[1].imshow(fftRealDenoised[:,:,i], cmap = 'gray')  # Use alpha for overlapping channels
         axes[1].set_title('Denoised Image')
 
         # Add colorbars

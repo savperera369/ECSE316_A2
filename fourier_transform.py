@@ -89,7 +89,6 @@ def fft_twoD(twoDArr):
 
     return fft_final
 
-
 def fft_twoD_inverse(twoDArr):
     
     original_rows = []
