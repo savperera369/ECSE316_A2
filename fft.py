@@ -100,13 +100,18 @@ if __name__ == "__main__":
 
         keep_fraction = 0.1
         mod_fftImage = np.array(ftImage).copy()
+        non_zero_countBefore = np.count_nonzero(mod_fftImage)
         height,width = mod_fftImage.shape
         mod_fftImage[int(height*keep_fraction):int(height*(1-keep_fraction))] = 0
         mod_fftImage[:, int(width*keep_fraction):int(width*(1-keep_fraction))] = 0
+        non_zero_countAfter = np.count_nonzero(mod_fftImage)
         ft_modified = mod_fftImage.tolist()
         
-        ft_denoised = fft_twoD_inverse(ft_modified)
+        print("Number of Non Zeroes Before Denoising: ", non_zero_countBefore)
+        print("Number of Non Zeroes After Denoising: ", non_zero_countAfter)
+        print("Fraction of Non Zeroes: ", non_zero_countAfter/mod_fftImage.size)
 
+        ft_denoised = fft_twoD_inverse(ft_modified)
         fft_denoised_final = unpadImage(ft_denoised, padPixelsRow, padPixelsCol)
         fftRealDenoised = np.real(fft_denoised_final)
 
@@ -132,54 +137,21 @@ if __name__ == "__main__":
 
     elif args.mode == 3:
 
-        ftImage, builtInFtImage, imgDisplay, padPixels = padImage(args.image)
-        ftNumpy = np.array(ftImage)
+        ftImage, builtInFtImage, imgDisplay, padPixelsRow, padPixelsCol = padImage(args.image)
 
-        keep_fraction = 0.01
-        numZeroes = 0
-        ft_modifiedOne = []
+        keep_fraction = 0.1
+        mod_fft_One = np.array(ftImage).copy()
+        threshold = keep_fraction * np.max(np.abs(mod_fft_One))
+        # Set coefficients below the threshold to zero
+        mod_fft_One[np.abs(mod_fft_One) < threshold] = 0
+        numNonZeroes = np.count_nonzero(mod_fft_One)
+        ft_modifiedOne = mod_fft_One.tolist()
 
-        for twoDArr in ftImage:
-            im_fft2 = np.array(twoDArr).copy()
-            threshold = keep_fraction * np.max(np.abs(im_fft2))
-            # Set coefficients below the threshold to zero
-            im_fft2[np.abs(im_fft2) < threshold] = 0
-            numZeroes = numZeroes + np.count_nonzero(im_fft2 == 0)
-            ft_modifiedOne.append(im_fft2.tolist())
-
-        ft_denoisedOne = []
-
-        for twoDArr in ft_modifiedOne:
-            inverse_row = fft_twoD_inverse(twoDArr)
-            ft_denoisedOne.append(inverse_row)
-
-        fft_denoised_finalOne = unpadImage(ft_denoisedOne, padPixels)
+        print(numNonZeroes/mod_fft_One.size)
+        
+        ft_denoisedOne = fft_twoD_inverse(ft_modifiedOne)
+        fft_denoised_finalOne = unpadImage(ft_denoisedOne, padPixelsRow, padPixelsCol)
         fftRealDenoisedOne = np.real(fft_denoised_finalOne)
-        print(f"Number of zeroes after thresholding: {numZeroes}")
-
-        # #99.9% are zeroes
-
-        keep_fractionSix = 0.001
-        numZeroes = 0
-        ft_modifiedSix = []
-
-        for twoDArr in ftImage:
-            im_fft2 = np.array(twoDArr).copy()
-            threshold = keep_fractionSix * np.max(np.abs(im_fft2))
-            # Set coefficients below the threshold to zero
-            im_fft2[np.abs(im_fft2) < threshold] = 0
-            numZeroes = numZeroes + np.count_nonzero(im_fft2 == 0)
-            ft_modifiedSix.append(im_fft2.tolist())
-
-        ft_denoisedSix = []
-
-        for twoDArr in ft_modifiedSix:
-            inverse_row = fft_twoD_inverse(twoDArr)
-            ft_denoisedSix.append(inverse_row)
-
-        fft_denoised_finalSix = unpadImage(ft_denoisedSix, padPixels)
-        fftRealDenoisedSix = np.real(fft_denoised_finalSix)
-        print(f"Number of zeroes after thresholding: {numZeroes}")
 
         # Create a 1x2 subplot
         fig, axes = plt.subplots(1, 2, figsize=(10, 5))
@@ -188,8 +160,7 @@ if __name__ == "__main__":
         im1 = axes[0].imshow(imgDisplay, cmap='gray')
         axes[0].set_title('Original Image')
 
-        for i in range(3):  # Loop over RGB channels
-            im2 = axes[1].imshow(fftRealDenoisedOne[:,:,i], cmap = 'gray')  # Use alpha for overlapping channels
+        im2 = axes[1].imshow(fftRealDenoisedOne, cmap = 'gray')  
         axes[1].set_title('Denoised Image')
 
         # Add colorbars
@@ -215,12 +186,12 @@ if __name__ == "__main__":
         # print(np.allclose(dftNumpy, fftNumpy, rtol=1e-5, atol=1e-8))
         # print(np.allclose(dftNumpy, builtNumpy, rtol=1e-5, atol=1e-8))
         # print(np.allclose(fftNumpy, builtNumpy, rtol=1e-5, atol=1e-8))
-        runtimesDft = [[],[],[],[],[]]
-        runtimesFft = [[],[],[],[],[]]
-        sizes = [32*32, 64*64, 128*128, 256*256, 512*512]
+        runtimesDft = [[],[],[],[],[],[]]
+        runtimesFft = [[],[],[],[],[],[]]
+        sizes = [32*32, 64*64, 128*128, 256*256, 512*512, 1024*1024]
         n=5
         for i in range(3):
-            for j in range(5):
+            for j in range(6):
                 random_array = np.random.rand(2**n, 2**n)
                 listForm = random_array.tolist()
 
@@ -240,7 +211,7 @@ if __name__ == "__main__":
 
                 n = n + 1
 
-                if j==4:
+                if j==5:
                     n = 5
 
         runTimeDftAve = []
