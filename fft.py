@@ -252,6 +252,27 @@ if __name__ == "__main__":
             fftStd = np.std(npRuntime)
             runTimeFftStd.append(fftStd)
 
+        sizeProblem = np.array(sizes)
+        dftMeans = np.array(runTimeDftAve)
+        dftStd = np.array(runTimeDftStd)
+        fftMeans = np.array(runTimeFftAve)
+        fftStd = np.array(runTimeFftStd)
+
+        # Plotting with error bars
+        plt.errorbar(sizeProblem, dftMeans, yerr=dftStd, label='Naive', marker='o')
+        plt.errorbar(sizeProblem, fftMeans, yerr=fftStd, label='FFT', marker='s')
+
+        # Adding labels and title
+        plt.xlabel('Problem Size')
+        plt.ylabel('Runtime in Seconds')
+        plt.title('Average Runtimes of 2D Naive DFT vs 2D Fast Fourier Transform')
+
+        # Adding legend
+        plt.legend()
+
+        # Display the plot
+        plt.show()
+
         # builtInFft = np.fft.fft2(np.array(listForm))
         # builtNumpy = np.abs(builtInFft)
         # print(np.allclose(dftNumpy, fftNumpy, rtol=1e-5, atol=1e-8))
