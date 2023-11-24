@@ -69,7 +69,9 @@ if __name__ == "__main__":
         fftImage = np.array(ftImage)
         fftImageBuiltIn = np.array(builtInFtImage)
 
+        #Absolute value of Fourier Transform for our function
         absFftImage = np.abs(fftImage)
+        #Absolute value of Fourier Transform for built in Function
         absBuiltInFft = np.abs(fftImageBuiltIn)
 
         print(np.allclose(absFftImage, absBuiltInFft, rtol=1e-5, atol=1e-8))
@@ -98,7 +100,7 @@ if __name__ == "__main__":
 
         ftImage, builtInFtImage, imgDisplay, padPixelsRow, padPixelsCol = padImage(args.image)
 
-        keep_fraction = 0.1
+        keep_fraction = 0.3
         mod_fftImage = np.array(ftImage).copy()
         non_zero_countBefore = np.count_nonzero(mod_fftImage)
         height,width = mod_fftImage.shape
@@ -154,7 +156,7 @@ if __name__ == "__main__":
             
             ft_denoised = fft_twoD_inverse(ft_modified)
             fft_denoised_final = unpadImage(ft_denoised, padPixelsRow, padPixelsCol)
-            fftRealDenoised= np.real(fft_denoised_final)
+            fftRealDenoised = np.real(fft_denoised_final)
             compressedImages.append(fftRealDenoised)
 
             if i==3:
@@ -192,33 +194,31 @@ if __name__ == "__main__":
     
     elif args.mode == 4:
 
-        runtimesDft = [[],[],[],[],[],[]]
-        runtimesFft = [[],[],[],[],[],[]]
-        sizes = [32*32, 64*64, 128*128, 256*256, 512*512, 1024*1024]
+        runtimesDft = [[],[],[],[],[]]
+        runtimesFft = [[],[],[],[],[]]
+        sizes = [32*32, 64*64, 128*128, 256*256, 512*512]
         n=5
 
-        for i in range(3):
-            for j in range(6):
+        for i in range(4):
+            for j in range(5):
                 random_array = np.random.rand(2**n, 2**n)
                 listForm = random_array.tolist()
 
                 start_dft = time.time()
                 dftResult = dft_naive_twoD(listForm)
-                #dftNumpy = np.abs(np.array(dftResult))
                 end_dft = time.time()
                 runtime_dft = end_dft - start_dft
                 runtimesDft[j].append(runtime_dft)
 
                 start_fft = time.time()
                 fftResult = fft_twoD(listForm)
-                #fftNumpy = np.abs(np.array(fftResult))
                 end_fft = time.time()
                 runtime_fft = end_fft - start_fft
                 runtimesFft[j].append(runtime_fft)
 
                 n = n + 1
 
-                if j==5:
+                if j==4:
                     n = 5
 
         runTimeDftAve = []
@@ -241,14 +241,16 @@ if __name__ == "__main__":
             runTimeFftStd.append(fftStd)
 
         sizeProblem = np.array(sizes)
+        
         dftMeans = np.array(runTimeDftAve)
-        dftStd = np.array(runTimeDftStd)
+        dftError = (np.array(runTimeDftStd)) * 2
+        
         fftMeans = np.array(runTimeFftAve)
-        fftStd = np.array(runTimeFftStd)
+        fftError = (np.array(runTimeFftStd)) * 2
 
         # Plotting with error bars
-        plt.errorbar(sizeProblem, dftMeans, yerr=dftStd, label='Naive', marker='o')
-        plt.errorbar(sizeProblem, fftMeans, yerr=fftStd, label='FFT', marker='s')
+        plt.errorbar(sizeProblem, dftMeans, yerr=dftError, label='2D Naive', marker='o')
+        plt.errorbar(sizeProblem, fftMeans, yerr=fftError, label='2D FFT', marker='s')
 
         # Adding labels and title
         plt.xlabel('Problem Size')
@@ -260,6 +262,67 @@ if __name__ == "__main__":
 
         # Display the plot
         plt.show()
+
+        # runtimesDft1D = [[],[],[],[],[],[],[],[],[]]
+        # runtimesFft1D = [[],[],[],[],[],[],[],[],[]]
+        # sizes1D = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
+        # n=5
+
+        # for i in range(10):
+        #     for j in range(9):
+        #         random_array = np.random.rand(2**n)
+        #         listForm = random_array.tolist()
+
+        #         start_dft = time.time()
+        #         dftResult = dft_naive_oneD(listForm, False)
+        #         end_dft = time.time()
+        #         runtime_dft = end_dft - start_dft
+        #         runtimesDft1D[j].append(runtime_dft)
+
+        #         start_fft = time.time()
+        #         fftResult = fast_fourier_transform(listForm, False)
+        #         end_fft = time.time()
+        #         runtime_fft = end_fft - start_fft
+        #         runtimesFft1D[j].append(runtime_fft)
+
+        #         n = n + 1
+
+        #         if j==8:
+        #             n = 5
+
+        # runTimeDftAve1D = []
+        # runTimeFftAve1D = []
+        # runTimeDftStd1D = []
+        # runTimeFftStd1D = []
+
+        # for runTime in runtimesDft1D:
+        #     npRuntime = np.array(runTime)
+        #     dftMean = np.mean(npRuntime)
+        #     runTimeDftAve1D.append(dftMean)
+        #     dftStd = np.std(npRuntime)
+        #     runTimeDftStd1D.append(dftStd)
+
+        # for runTime in runtimesFft1D:
+        #     npRuntime = np.array(runTime)
+        #     fftMean = np.mean(npRuntime)
+        #     runTimeFftAve1D.append(fftMean)
+        #     fftStd = np.std(npRuntime)
+        #     runTimeFftStd1D.append(fftStd)
+
+        # sizeProblem1D = np.array(sizes1D)
+        # dftMeans1D = np.array(runTimeDftAve1D)
+        # dftError1D = (np.array(runTimeDftStd1D)) * 2
+        # print("dft")
+        # print(dftMeans1D)
+        # print(dftError1D)
+        # fftMeans1D = np.array(runTimeFftAve1D)
+        # fftError1D = (np.array(runTimeFftStd1D)) * 2
+        # print("\nfft")
+        # print(fftMeans1D)
+        # print(fftError1D)
+        
+        
+
 
         
     
