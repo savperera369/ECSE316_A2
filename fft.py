@@ -111,7 +111,7 @@ if __name__ == "__main__":
         
         print("Number of Non Zeroes Before Denoising: ", non_zero_countBefore)
         print("Number of Non Zeroes After Denoising: ", non_zero_countAfter)
-        print("Fraction of Non Zeroes: ", non_zero_countAfter/mod_fftImage.size)
+        print("Fraction of Original Non Zeroes: ", non_zero_countAfter/non_zero_countBefore)
 
         ft_denoised = fft_twoD_inverse(ft_modified)
         fft_denoised_final = unpadImage(ft_denoised, padPixelsRow, padPixelsCol)
@@ -321,7 +321,23 @@ if __name__ == "__main__":
         # print(fftMeans1D)
         # print(fftError1D)
         
-        
+        # # Plotting with error bars
+        # plt.errorbar(sizeProblem1D, dftMeans1D, yerr=dftError1D, label='1D Naive', marker='o')
+        # plt.errorbar(sizeProblem1D, fftMeans1D, yerr=fftError1D, label='1D FFT', marker='s')
+
+        # # Adding labels and title
+        # plt.xlabel('Problem Size')
+        # plt.ylabel('Runtime in Seconds')
+        # plt.title('Average Runtimes of 1D Naive DFT vs 1D Fast Fourier Transform')
+
+        # # Adding legend
+        # plt.legend()
+
+        # # Display the plot
+        # plt.show()
+    else:
+        print("Not a valid mode. Please input a mode from 1 to 4")
+
 
 
         

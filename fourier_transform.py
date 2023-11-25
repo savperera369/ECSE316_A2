@@ -1,6 +1,7 @@
 import numpy as np
 import cmath
 
+#Naive 1D Fourier Transform Code
 def dft_naive_oneD(arrNums, isInverse):
     exponent_expression = 0
     dft_coefficients = []
@@ -21,6 +22,7 @@ def dft_naive_oneD(arrNums, isInverse):
     
     return dft_coefficients
 
+#Naive 2D Fourier Transform Code
 def dft_naive_twoD(twoDArr):
     dft_twoD_rows = []
     dft_twoD_columns = []
@@ -41,7 +43,7 @@ def dft_naive_twoD(twoDArr):
 
     return dft_final
 
-#compute X_subk
+#Naive 1D FFT Code
 def fast_fourier_transform(arrNums, isInverse):
     exponent_expression = 0
     N = len(arrNums)
@@ -86,9 +88,11 @@ def fast_fourier_transform(arrNums, isInverse):
 
     return fft_result
 
+#Inverse 1D FFT
 def fft_inverse(arrNums):
     return fast_fourier_transform(arrNums, True)
 
+#2D FFT implementation
 def fft_twoD(twoDArr):
     fft_twoD_rows = []
     fft_twoD_columns = []
@@ -109,6 +113,7 @@ def fft_twoD(twoDArr):
 
     return fft_final
 
+#2D FFT Inverse Implementation
 def fft_twoD_inverse(twoDArr):
     
     original_rows = []
